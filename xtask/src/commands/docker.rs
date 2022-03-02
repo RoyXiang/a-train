@@ -49,7 +49,7 @@ impl XtaskCommand for Build {
         cmd.arg("build");
         cmd.arg(".");
         cmd.arg("-t");
-        cmd.arg("ghcr.io/m-rots/a-train");
+        cmd.arg("ghcr.io/royxiang/a-train");
         cmd.arg("--platform");
         cmd.arg(platforms.join(","));
 
