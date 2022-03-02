@@ -34,7 +34,7 @@ impl Atrain {
         use tokio::time::{sleep, Duration};
 
         self.sync().await?;
-        sleep(Duration::from_secs(60)).await;
+        sleep(Duration::from_secs(5)).await;
         Ok(())
     }
 }
