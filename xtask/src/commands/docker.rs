@@ -38,18 +38,31 @@ struct Build {
     /// Push the Docker image to the remote registry.
     #[clap(long)]
     push: bool,
+    /// The owner of the package in the remote registry.
+    #[clap(long, default_value = "m-rots")]
+    owner: String,
+    /// An additional version of the Docker image.
+    #[clap(long)]
+    version: String,
 }
 
 impl XtaskCommand for Build {
     fn run(&self) -> anyhow::Result<()> {
+        let owner = self.owner.to_ascii_lowercase();
         let platforms = vec!["linux/amd64", "linux/arm64", "linux/arm/v6", "linux/arm/v7"];
 
         let mut cmd = Command::new("docker");
         cmd.arg("buildx");
         cmd.arg("build");
         cmd.arg(".");
+
         cmd.arg("-t");
-        cmd.arg("ghcr.io/royxiang/a-train");
+        cmd.arg(format!("ghcr.io/{}/a-train:latest", owner));
+        if !self.version.is_empty() {
+            cmd.arg("-t");
+            cmd.arg(format!("ghcr.io/{}/a-train:{}", owner, self.version));
+        }
+
         cmd.arg("--platform");
         cmd.arg(platforms.join(","));
 

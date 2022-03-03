@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - ".github/**"
 
 jobs:
   build:
@@ -103,5 +105,9 @@ jobs:
         run: ls -R
         working-directory: target/dist
 
+      - name: Make me a pretty version string
+        run: |
+          echo "VERSION=$(date '+%Y-%m-%d')-$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
+
       - name: Build and push
-        run: cargo xtask docker build --push
+        run: cargo xtask docker build --push --owner ${{ github.repository_owner }} --version ${{ env.VERSION }}
