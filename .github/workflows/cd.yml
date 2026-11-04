@@ -43,6 +43,12 @@ jobs:
       - name: Install Rust Cross
         run: cargo install cross
 
+      # macos-latest is Apple Silicon. cross has no Darwin image and falls
+      # back to the host toolchain, which does not include the Intel target.
+      - name: Install Apple Rust target
+        if: runner.os == 'macOS'
+        run: rustup target add ${{ matrix.target }}
+
       - name: Run dist
         run: cargo xtask dist ${{ matrix.target }}
 
