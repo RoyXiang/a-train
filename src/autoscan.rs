@@ -3,7 +3,14 @@ use bernard::{ChangedPath, Path};
 use eyre::eyre;
 use reqwest::{Client, ClientBuilder, IntoUrl, Request, Response, Url};
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 use std::{collections::HashSet, path::PathBuf};
+
+/// Limit for establishing a connection, including DNS, TCP, and TLS.
+const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
+
+/// Limit for one HTTP call, from connect until the response body has finished.
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 use thiserror::Error;
 use tower::{buffer::Buffer, util::BoxService, BoxError, Service as _, ServiceBuilder, ServiceExt};
 use tracing::debug;
@@ -105,7 +112,9 @@ impl AutoscanBuilder {
 
         AutoscanBuilder {
             auth,
-            client: ClientBuilder::new(),
+            client: ClientBuilder::new()
+                .connect_timeout(CONNECT_TIMEOUT)
+                .timeout(REQUEST_TIMEOUT),
             url,
         }
     }
@@ -217,7 +226,6 @@ mod tests {
     use super::{create_payload, Autoscan, Payload};
     use bernard::{ChangedPath, InnerPath, Path};
     use pretty_assertions::assert_eq;
-    use reqwest::{Client, Url};
     use serde_json::{from_value, json};
     use wiremock::matchers::{body_json, method, path};
     use wiremock::{Mock, ResponseTemplate};
@@ -243,7 +251,7 @@ mod tests {
 
     impl Autoscan {
         fn new_test(url: &str) -> Self {
-            Autoscan::new(None, Client::new(), Url::parse(url).unwrap())
+            Autoscan::builder(url, None).build()
         }
     }
 
